@@ -4,9 +4,10 @@ This repo contains the code for a rudimentary search engine for the website of t
 
 ## Part 1 - Pagerank
 
-Results to the command **pagerank.py --data=./small.csv.gz --verbose** gives the basic ranking of urls to the site:
+Results to the command `pagerank.py --data=./small.csv.gz --verbose` gives the basic ranking of urls to the site:
 
-*DEBUG:root:computing indices
+```
+DEBUG:root:computing indices
 DEBUG:root:computing values
 INFO:root:rank=0 pagerank=6.3850e+00 url=4
 INFO:root:rank=1 pagerank=4.8028e+00 url=6
@@ -14,7 +15,7 @@ INFO:root:rank=2 pagerank=3.2527e+00 url=5
 INFO:root:rank=3 pagerank=1.8036e-01 url=2
 INFO:root:rank=4 pagerank=1.2882e-01 url=3
 INFO:root:rank=5 pagerank=1.1278e-01 url=1*
-
+```
 
 Results to the command **pagerank.py --data=./lawfareblog.csv.gz --search_query='corona'** applies the pagerank to the single term "corona":
 
