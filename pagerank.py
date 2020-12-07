@@ -9,8 +9,11 @@ import math
 import torch
 import gzip
 import csv
-
+import gensim.downloader
 import logging
+global vectors 
+vectors = gensim.downloader.load('glove-twitter-25')
+
 
 
 class WebGraph():
@@ -168,9 +171,18 @@ class WebGraph():
         Results are displayed in sorted order according to the pagerank vector pi.
         '''
         n = self.P.shape[0]
+
+        # implement scores
         vals,indices = torch.topk(pi,n)
 
         matches = 0
+        ranking = pi
+        for count, value in enumerate(pi):
+            
+            url = self._index_to_url(count)
+            ranking[count] = value * query_score(url,query)
+        vals,indices = torch.topk(ranking,n)
+        
         for i in range(n):
             if matches >= max_results:
                 break
@@ -215,6 +227,9 @@ def url_satisfies_query(url, query):
             num_terms+=1
             if term in str(url):
                 satisfies = True
+            for similar in vectors.most_similar(term)[:5]:
+                if similar[0] in str(url):
+                    satisfies = True
     if num_terms==0:
         satisfies=True
 
@@ -222,7 +237,41 @@ def url_satisfies_query(url, query):
         if term[0] == '-':
             if term[1:] in str(url):
                 return False
+            for similar in vectors.most_similar(term[1:])[:5]:
+                if similar[0] in str(url):
+                    satisfies = True
     return satisfies
+
+def query_score(url,query)
+    '''
+    This fuctions is supposed to rank the query for how often it appears in the text at the url,
+    but that seemed out of scope for this class. Instead it returns how well the query matches the url
+    '''
+    score = 0
+    p=30
+    terms = query.split()
+
+    num_terms=0
+    for term in terms:
+        if term[0] == '-':
+            if term[1:] in str(url):
+                return False
+            for similar in vectors.most_similar(term[1:])[:5]:
+                if similar[0] in str(url):
+                    satisfies = False
+        else:
+            terms = term.append(vectors.most_similar(term)[:5])
+            for similar in terms:
+                n= str(url).count(similar[0])
+                word_similarity = vectors.similarity(similar,term)
+                score += n * word_similarity ** p
+
+    
+    if num_terms==0:
+        score=.5
+        
+    return score
+
 
 
 if __name__=='__main__':
@@ -247,4 +296,5 @@ if __name__=='__main__':
     g = WebGraph(args.data, filter_ratio=args.filter_ratio)
     v = g.make_personalization_vector(args.personalization_vector_query)
     pi = g.power_method(v, alpha=args.alpha, max_iterations=args.max_iterations, epsilon=args.epsilon)
+    ranking = pi * query_score(self._index_to_url(i), query)
     g.search(pi, query=args.search_query, max_results=args.max_results)
